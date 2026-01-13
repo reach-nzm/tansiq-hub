@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useStore } from '@/store/useStore';
+import { useStore, Order, CartItem } from '@/store/useStore';
 import { 
   CreditCard, 
   Truck, 
@@ -16,16 +16,16 @@ import {
 import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const { cart, clearCart } = useStore();
+  const { cart, clearCart, addOrder, currentUser } = useStore();
   const [step, setStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   
   const [shipping, setShipping] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
+    firstName: currentUser?.name?.split(' ')[0] || '',
+    lastName: currentUser?.name?.split(' ').slice(1).join(' ') || '',
+    email: currentUser?.email || '',
+    phone: currentUser?.phone || '',
     address: '',
     city: '',
     state: '',
@@ -54,8 +54,31 @@ export default function CheckoutPage() {
 
   const handleSubmitPayment = (e: React.FormEvent) => {
     e.preventDefault();
+    
     // Generate random order number
     const ordNum = 'TH' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    // Create order object
+    const newOrder: Order = {
+      id: ordNum,
+      items: cart as CartItem[],
+      total: total,
+      status: 'pending',
+      customer: {
+        name: `${shipping.firstName} ${shipping.lastName}`,
+        email: shipping.email,
+        phone: shipping.phone,
+        address: shipping.address,
+        city: `${shipping.city}, ${shipping.state} ${shipping.zipCode}`,
+        country: shipping.country,
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Add order to store
+    addOrder(newOrder);
+    
     setOrderNumber(ordNum);
     setOrderPlaced(true);
     clearCart();

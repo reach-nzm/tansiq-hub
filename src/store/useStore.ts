@@ -64,6 +64,13 @@ interface StoreState {
   getCartTotal: () => number;
   getCartCount: () => number;
 
+  // Wishlist
+  wishlist: Product[];
+  addToWishlist: (product: Product) => void;
+  removeFromWishlist: (productId: string) => void;
+  isInWishlist: (productId: string) => boolean;
+  getWishlistCount: () => number;
+
   // Products
   products: Product[];
   setProducts: (products: Product[]) => void;
@@ -103,7 +110,7 @@ const sampleProducts: Product[] = [
     originalPrice: 29.99,
     category: 'Organic Foods',
     subcategory: 'Dates & Dried Fruits',
-    image: 'https://images.unsplash.com/photo-1593001874117-c99c800e3eb7?w=500',
+    image: 'https://images.unsplash.com/photo-1586776977607-310e9c725c37?w=500&auto=format&fit=crop',
     stock: 150,
     rating: 4.9,
     reviews: 234,
@@ -119,7 +126,7 @@ const sampleProducts: Product[] = [
     price: 49.99,
     category: 'Books',
     subcategory: 'Islamic Books',
-    image: 'https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=500',
+    image: 'https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=500&auto=format&fit=crop',
     stock: 75,
     rating: 5.0,
     reviews: 189,
@@ -135,7 +142,7 @@ const sampleProducts: Product[] = [
     originalPrice: 24.99,
     category: 'Clothing',
     subcategory: 'Hijabs',
-    image: 'https://images.unsplash.com/photo-1590073242678-70ee3fc28f8e?w=500',
+    image: 'https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=500&auto=format&fit=crop',
     stock: 200,
     rating: 4.8,
     reviews: 156,
@@ -151,7 +158,7 @@ const sampleProducts: Product[] = [
     price: 18.99,
     category: 'Organic Foods',
     subcategory: 'Oils & Honey',
-    image: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?w=500',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&auto=format&fit=crop',
     stock: 120,
     rating: 4.7,
     reviews: 98,
@@ -167,7 +174,7 @@ const sampleProducts: Product[] = [
     originalPrice: 79.99,
     category: 'Clothing',
     subcategory: 'Men\'s Wear',
-    image: 'https://images.unsplash.com/photo-1578932750294-f5075e85f44a?w=500',
+    image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&auto=format&fit=crop',
     stock: 80,
     rating: 4.6,
     reviews: 67,
@@ -181,7 +188,7 @@ const sampleProducts: Product[] = [
     price: 34.99,
     category: 'Organic Foods',
     subcategory: 'Oils & Honey',
-    image: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500',
+    image: 'https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=500&auto=format&fit=crop',
     stock: 60,
     rating: 4.9,
     reviews: 145,
@@ -196,7 +203,7 @@ const sampleProducts: Product[] = [
     price: 39.99,
     category: 'Home & Decor',
     subcategory: 'Wall Art',
-    image: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=500',
+    image: 'https://images.unsplash.com/photo-1579541592065-da8a15e49bc7?w=500&auto=format&fit=crop',
     stock: 45,
     rating: 4.8,
     reviews: 89,
@@ -211,7 +218,7 @@ const sampleProducts: Product[] = [
     price: 29.99,
     category: 'Books',
     subcategory: 'Islamic Books',
-    image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500',
+    image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=500&auto=format&fit=crop',
     stock: 90,
     rating: 4.9,
     reviews: 112,
@@ -226,7 +233,7 @@ const sampleProducts: Product[] = [
     originalPrice: 54.99,
     category: 'Home & Decor',
     subcategory: 'Prayer Items',
-    image: 'https://images.unsplash.com/photo-1585036156171-384164a8c675?w=500',
+    image: 'https://images.unsplash.com/photo-1567361808960-dec9cb578182?w=500&auto=format&fit=crop',
     stock: 100,
     rating: 4.7,
     reviews: 78,
@@ -241,7 +248,7 @@ const sampleProducts: Product[] = [
     price: 15.99,
     category: 'Organic Foods',
     subcategory: 'Spices',
-    image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500',
+    image: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500&auto=format&fit=crop',
     stock: 200,
     rating: 4.8,
     reviews: 56,
@@ -256,7 +263,7 @@ const sampleProducts: Product[] = [
     originalPrice: 109.99,
     category: 'Clothing',
     subcategory: 'Women\'s Wear',
-    image: 'https://images.unsplash.com/photo-1583391733956-6c78276477e2?w=500',
+    image: 'https://images.unsplash.com/photo-1589782182703-2aaa69037b5b?w=500&auto=format&fit=crop',
     stock: 50,
     rating: 4.9,
     reviews: 134,
@@ -271,7 +278,7 @@ const sampleProducts: Product[] = [
     price: 9.99,
     category: 'Health & Beauty',
     subcategory: 'Oral Care',
-    image: 'https://images.unsplash.com/photo-1628359355624-855775b5c9c4?w=500',
+    image: 'https://images.unsplash.com/photo-1609840114035-3c981b782dfe?w=500&auto=format&fit=crop',
     stock: 300,
     rating: 4.6,
     reviews: 203,
@@ -443,6 +450,25 @@ export const useStore = create<StoreState>()(
         return get().cart.reduce((count, item) => count + item.quantity, 0);
       },
 
+      // Wishlist
+      wishlist: [],
+      addToWishlist: (product) => {
+        const wishlist = get().wishlist;
+        const existingItem = wishlist.find((item) => item.id === product.id);
+        if (!existingItem) {
+          set({ wishlist: [...wishlist, product] });
+        }
+      },
+      removeFromWishlist: (productId) => {
+        set({ wishlist: get().wishlist.filter((item) => item.id !== productId) });
+      },
+      isInWishlist: (productId) => {
+        return get().wishlist.some((item) => item.id === productId);
+      },
+      getWishlistCount: () => {
+        return get().wishlist.length;
+      },
+
       // Products
       products: sampleProducts,
       setProducts: (products) => set({ products }),
@@ -488,7 +514,7 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'tansiq-hub-storage',
-      partialize: (state) => ({ cart: state.cart }),
+      partialize: (state) => ({ cart: state.cart, wishlist: state.wishlist }),
     }
   )
 );

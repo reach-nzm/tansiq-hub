@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Filter,
@@ -13,13 +13,26 @@ import {
   DollarSign,
   User,
   MoreVertical,
+  Edit2,
+  Trash2,
+  X,
+  Check,
 } from 'lucide-react';
-import { useStore } from '@/store/useStore';
+import { useStore, User as UserType } from '@/store/useStore';
 import { format } from 'date-fns';
 
 export default function AdminCustomersPage() {
-  const { users } = useStore();
+  const { users, setUsers } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [editingCustomer, setEditingCustomer] = useState<UserType | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
+  
   const customers = users.filter((u) => u.role === 'customer');
 
   const filteredCustomers = customers.filter(
@@ -33,8 +46,122 @@ export default function AdminCustomersPage() {
   const totalOrders = customers.reduce((sum, c) => sum + (c.orders || 0), 0);
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
+  const openEditModal = (customer: UserType) => {
+    setEditingCustomer(customer);
+    setFormData({
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone || '',
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = () => {
+    if (!editingCustomer) return;
+    
+    const updatedUsers = users.map((user) =>
+      user.id === editingCustomer.id
+        ? { ...user, ...formData }
+        : user
+    );
+    setUsers(updatedUsers);
+    setIsModalOpen(false);
+    setEditingCustomer(null);
+  };
+
+  const handleDelete = (customerId: string) => {
+    const updatedUsers = users.filter((user) => user.id !== customerId);
+    setUsers(updatedUsers);
+    setDeleteConfirm(null);
+  };
+
   return (
     <div className="space-y-6">
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            onClick={() => setIsModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl p-6 max-w-md w-full"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-[var(--color-text)]">
+                  Edit Customer
+                </h2>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full px-4 py-3 border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-3 border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-primary)]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-3 border border-[var(--color-border)] text-[var(--color-text)] font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSave}
+                  className="flex-1 py-3 bg-[var(--color-primary)] text-white font-semibold rounded-xl hover:bg-[var(--color-primary-dark)] transition-colors flex items-center justify-center gap-2"
+                >
+                  <Check className="w-5 h-5" />
+                  Save Changes
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[var(--color-text)]">Customers</h1>
@@ -192,10 +319,44 @@ export default function AdminCustomersPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center justify-end">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <MoreVertical className="w-5 h-5 text-[var(--color-text-light)]" />
-                      </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => openEditModal(customer)}
+                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4 text-blue-500" />
+                      </motion.button>
+                      {deleteConfirm === customer.id ? (
+                        <div className="flex items-center gap-1">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleDelete(customer.id)}
+                            className="p-2 bg-red-500 text-white rounded-lg"
+                          >
+                            <Check className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setDeleteConfirm(null)}
+                            className="p-2 bg-gray-200 rounded-lg"
+                          >
+                            <X className="w-4 h-4" />
+                          </motion.button>
+                        </div>
+                      ) : (
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setDeleteConfirm(customer.id)}
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </motion.button>
+                      )}
                     </div>
                   </td>
                 </motion.tr>
@@ -203,13 +364,6 @@ export default function AdminCustomersPage() {
             </tbody>
           </table>
         </div>
-
-        {filteredCustomers.length === 0 && (
-          <div className="text-center py-12">
-            <User className="w-12 h-12 mx-auto mb-4 text-[var(--color-text-light)]" />
-            <p className="text-[var(--color-text)]">No customers found</p>
-          </div>
-        )}
       </div>
     </div>
   );

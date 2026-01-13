@@ -3,13 +3,19 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/store/useStore';
-import { Mail, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, CheckCircle, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const DEMO_CREDENTIALS = {
-  email: 'demo@tansiqhub.com',
-  password: 'demo123',
+  customer: {
+    email: 'demo@tansiqhub.com',
+    password: 'demo123',
+  },
+  admin: {
+    email: 'admin@tansiqhub.com',
+    password: 'admin123',
+  },
 };
 
 export default function LoginPage() {
@@ -29,26 +35,37 @@ export default function LoginPage() {
 
     // Simulate login delay
     setTimeout(() => {
-      if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
-        const demoUser = users.find((u) => u.email === DEMO_CREDENTIALS.email);
-        if (demoUser) {
-          setCurrentUser(demoUser);
+      // Find user by email
+      const user = users.find((u) => u.email === email);
+      
+      if (user) {
+        // Check password (demo passwords)
+        const isValidPassword = 
+          (email === DEMO_CREDENTIALS.customer.email && password === DEMO_CREDENTIALS.customer.password) ||
+          (email === DEMO_CREDENTIALS.admin.email && password === DEMO_CREDENTIALS.admin.password);
+        
+        if (isValidPassword) {
+          setCurrentUser(user);
           setLoading(false);
-          router.push('/profile');
+          
+          // Redirect based on role
+          if (user.role === 'admin') {
+            router.push('/admin');
+          } else {
+            router.push('/profile');
+          }
+          return;
         }
-      } else if (email && password) {
-        setError('Invalid email or password. Try demo@tansiqhub.com / demo123');
-        setLoading(false);
-      } else {
-        setError('Please enter your email and password');
-        setLoading(false);
       }
+      
+      setError('Invalid email or password.');
+      setLoading(false);
     }, 800);
   };
 
-  const useDemoAccount = () => {
-    setEmail(DEMO_CREDENTIALS.email);
-    setPassword(DEMO_CREDENTIALS.password);
+  const useDemoAccount = (type: 'customer' | 'admin') => {
+    setEmail(DEMO_CREDENTIALS[type].email);
+    setPassword(DEMO_CREDENTIALS[type].password);
     setShowDemoHint(false);
   };
 
@@ -71,30 +88,54 @@ export default function LoginPage() {
             <p className="text-[var(--color-text-light)] mt-1">Sign in to your account</p>
           </div>
 
-          {/* Demo Hint */}
+          {/* Demo Hints */}
           {showDemoHint && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl"
+              className="mb-6 space-y-3"
             >
-              <div className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-green-800 mb-2">
-                    Try the demo account:
-                  </p>
-                  <p className="text-xs text-green-700 mb-3">
-                    Email: demo@tansiqhub.com<br />
-                    Password: demo123
-                  </p>
-                  <button
-                    type="button"
-                    onClick={useDemoAccount}
-                    className="text-xs font-semibold text-green-600 hover:text-green-700 underline"
-                  >
-                    Use Demo Account
-                  </button>
+              {/* Customer Demo */}
+              <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-green-800 mb-1">
+                      Customer Demo Account
+                    </p>
+                    <p className="text-xs text-green-700 mb-2">
+                      Email: demo@tansiqhub.com / Password: demo123
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => useDemoAccount('customer')}
+                      className="text-xs font-semibold text-green-600 hover:text-green-700 underline"
+                    >
+                      Use Customer Account
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Demo */}
+              <div className="p-4 bg-purple-50 border border-purple-200 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-purple-800 mb-1">
+                      Admin Demo Account
+                    </p>
+                    <p className="text-xs text-purple-700 mb-2">
+                      Email: admin@tansiqhub.com / Password: admin123
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => useDemoAccount('admin')}
+                      className="text-xs font-semibold text-purple-600 hover:text-purple-700 underline"
+                    >
+                      Use Admin Account
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

@@ -90,24 +90,24 @@ export default function AboutPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <img
-                    src="https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400"
+                    src="https://images.unsplash.com/photo-1609599006353-e629aaabfeae?w=400&auto=format&fit=crop"
                     alt="Islamic books"
                     className="w-full rounded-2xl shadow-lg"
                   />
                   <img
-                    src="https://images.unsplash.com/photo-1593001874117-c99c800e3eb7?w=400"
+                    src="https://images.unsplash.com/photo-1586776977607-310e9c725c37?w=400&auto=format&fit=crop"
                     alt="Organic dates"
                     className="w-full rounded-2xl shadow-lg"
                   />
                 </div>
                 <div className="space-y-4 pt-8">
                   <img
-                    src="https://images.unsplash.com/photo-1590073242678-70ee3fc28f8e?w=400"
+                    src="https://images.unsplash.com/photo-1466781783364-36c955e42a7f?w=400&auto=format&fit=crop"
                     alt="Hijab collection"
                     className="w-full rounded-2xl shadow-lg"
                   />
                   <img
-                    src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=400"
+                    src="https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?w=400&auto=format&fit=crop"
                     alt="Islamic art"
                     className="w-full rounded-2xl shadow-lg"
                   />

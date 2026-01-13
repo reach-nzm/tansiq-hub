@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   ShoppingCart, 
   Search, 
@@ -14,6 +15,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { useRouter } from 'next/navigation';
 
 const categories = [
   { name: 'All Products', href: '/products' },
@@ -25,16 +27,55 @@ const categories = [
 ];
 
 export default function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
-  const { getCartCount, searchQuery, setSearchQuery, currentUser, cart, getCartTotal } = useStore();
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const { getCartCount, searchQuery, setSearchQuery, currentUser, cart, getCartTotal, products, getWishlistCount } = useStore();
   const cartCount = getCartCount();
   const cartTotal = getCartTotal();
+  const wishlistCount = getWishlistCount();
 
   // Avoid hydration mismatch: only render dynamic badge after mount
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Filter products based on search query
+  const searchResults = searchQuery.trim()
+    ? products.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5)
+    : [];
+
+  // Close search results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery)}`);
+      setShowSearchResults(false);
+    }
+  };
+
+  const handleProductClick = (productId: string) => {
+    setSearchQuery('');
+    setShowSearchResults(false);
+    router.push(`/products/${productId}`);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white">
@@ -71,25 +112,78 @@ export default function Header() {
             </Link>
 
             {/* Center Section - Search Bar */}
-            <div className="hidden md:flex flex-1 max-w-xl">
-              <div className="relative w-full">
+            <div className="hidden md:flex flex-1 max-w-xl" ref={searchRef}>
+              <form onSubmit={handleSearchSubmit} className="relative w-full">
                 <input
                   type="text"
                   placeholder="Search for products..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSearchResults(true);
+                  }}
+                  onFocus={() => setShowSearchResults(true)}
                   className="w-full px-5 py-3 pl-12 bg-[var(--color-bg-cream)] border-none rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30 text-[var(--color-text)] placeholder:text-[var(--color-text-light)]"
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery('')}
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setShowSearchResults(false);
+                    }}
                     className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 bg-[var(--color-text-light)] rounded-full flex items-center justify-center hover:bg-[var(--color-text-muted)] transition-colors"
                   >
                     <X className="w-3 h-3 text-white" />
                   </button>
                 )}
-              </div>
+
+                {/* Search Results Dropdown */}
+                <AnimatePresence>
+                  {showSearchResults && searchResults.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-[var(--color-border-light)] overflow-hidden z-50"
+                    >
+                      {searchResults.map((product) => (
+                        <button
+                          key={product.id}
+                          onClick={() => handleProductClick(product.id)}
+                          className="w-full flex items-center gap-4 p-3 hover:bg-[var(--color-bg-cream)] transition-colors text-left"
+                        >
+                          <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-[var(--color-text)] truncate">
+                              {product.name}
+                            </p>
+                            <p className="text-sm text-[var(--color-text-light)]">
+                              {product.category} • ${product.price.toFixed(2)}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                      <Link
+                        href={`/products?search=${encodeURIComponent(searchQuery)}`}
+                        onClick={() => setShowSearchResults(false)}
+                        className="flex items-center justify-center gap-2 p-3 bg-[var(--color-bg-cream)] text-[var(--color-primary)] font-medium hover:bg-[var(--color-primary)]/10 transition-colors"
+                      >
+                        View all results
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </form>
             </div>
 
             {/* Right Section - Actions */}
@@ -114,9 +208,18 @@ export default function Header() {
               </Link>
 
               {/* Wishlist */}
-              <button className="p-2.5 hover:bg-[var(--color-bg-cream)] rounded-full transition-colors relative">
+              <Link href="/wishlist" className="p-2.5 hover:bg-[var(--color-bg-cream)] rounded-full transition-colors relative">
                 <Heart className="w-5 h-5 text-[var(--color-text)]" />
-              </button>
+                {mounted && wishlistCount > 0 && (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center"
+                  >
+                    {wishlistCount}
+                  </motion.span>
+                )}
+              </Link>
 
               {/* Cart */}
               <Link 

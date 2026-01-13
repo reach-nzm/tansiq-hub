@@ -168,7 +168,7 @@ export default function HeroSection() {
               >
                 <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 mb-4">
                   <img
-                    src="https://images.unsplash.com/photo-1593001874117-c99c800e3eb7?w=500"
+                    src="https://images.unsplash.com/photo-1586776977607-310e9c725c37?w=500&auto=format&fit=crop"
                     alt="Featured Product"
                     className="w-full h-full object-cover"
                   />
