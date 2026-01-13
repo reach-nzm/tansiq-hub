@@ -3,11 +3,11 @@
 import { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Filter, X, ChevronDown, Grid, List, SlidersHorizontal } from 'lucide-react';
-import ProductCard from '@/components/products/ProductCard';
+import { Search, X, ChevronDown, Grid, LayoutGrid, SlidersHorizontal } from 'lucide-react';
+import ProductCard from '@/components/products/ProductCardNew';
+import SidebarFilter from '@/components/products/SidebarFilter';
 import { useStore } from '@/store/useStore';
 
-const categories = ['All', 'Organic Foods', 'Books', 'Clothing', 'Home & Decor', 'Health & Beauty'];
 const sortOptions = [
   { value: 'featured', label: 'Featured' },
   { value: 'newest', label: 'Newest' },
@@ -25,7 +25,7 @@ function ProductsContent() {
   const [sortBy, setSortBy] = useState('featured');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [gridCols, setGridCols] = useState<3 | 4>(3);
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
@@ -44,7 +44,7 @@ function ProductsContent() {
     }
 
     // Category filter
-    if (selectedCategory !== 'All') {
+    if (selectedCategory !== 'All' && selectedCategory !== 'All Products') {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
 
@@ -75,24 +75,34 @@ function ProductsContent() {
   }, [products, searchQuery, selectedCategory, priceRange, sortBy]);
 
   return (
-    <div className="min-h-screen bg-[var(--color-background)]">
-      {/* Header Banner */}
-      <div className="bg-[var(--color-primary)] py-12 islamic-pattern">
+    <div className="min-h-screen bg-white">
+      {/* Page Header */}
+      <div className="bg-[var(--color-bg-cream)] py-10 lg:py-14 border-b border-[var(--color-border-light)]">
         <div className="max-w-7xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center text-white"
+            className="text-center"
           >
-            <h1 className="text-4xl font-bold mb-2">Our Products</h1>
-            <p className="text-white/80">منتجاتنا المباركة</p>
+            <span className="inline-block px-4 py-1.5 bg-white text-[var(--color-text-muted)] text-sm font-medium rounded-full mb-4 shadow-soft">
+              {filteredProducts.length} Products
+            </span>
+            <h1 
+              className="text-4xl lg:text-5xl font-bold text-[var(--color-text)] mb-3"
+              style={{ fontFamily: 'var(--font-heading)' }}
+            >
+              {selectedCategory === 'All' || selectedCategory === 'All Products' ? 'All Products' : selectedCategory}
+            </h1>
+            <p className="text-[var(--color-text-muted)] max-w-lg mx-auto">
+              Discover our curated collection of premium quality products
+            </p>
           </motion.div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Search and Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        {/* Toolbar */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
           {/* Search */}
           <div className="flex-1 relative">
             <input
@@ -100,15 +110,15 @@ function ProductsContent() {
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 pl-12 border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 bg-white"
+              className="w-full px-5 py-3.5 pl-12 bg-[var(--color-bg-cream)] border-none rounded-full focus:outline-none focus:ring-2 focus:ring-[var(--color-secondary)]/30"
             />
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-light)]" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)]" />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 -translate-y-1/2"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 bg-[var(--color-text-light)] rounded-full flex items-center justify-center hover:bg-[var(--color-text-muted)] transition-colors"
               >
-                <X className="w-5 h-5 text-[var(--color-text-light)]" />
+                <X className="w-3 h-3 text-white" />
               </button>
             )}
           </div>
@@ -118,7 +128,7 @@ function ProductsContent() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="appearance-none px-4 py-3 pr-10 border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-primary)] bg-white cursor-pointer min-w-[180px]"
+              className="appearance-none px-5 py-3.5 pr-12 bg-white border border-[var(--color-border-light)] rounded-full focus:outline-none focus:border-[var(--color-secondary)] cursor-pointer min-w-[180px]"
             >
               {sortOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -126,231 +136,110 @@ function ProductsContent() {
                 </option>
               ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-light)] pointer-events-none" />
+            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--color-text-muted)] pointer-events-none" />
           </div>
 
           {/* Filter Toggle - Mobile */}
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
-            className="md:hidden flex items-center justify-center gap-2 px-4 py-3 border border-[var(--color-border)] rounded-xl bg-white"
+            className="lg:hidden flex items-center justify-center gap-2 px-5 py-3.5 bg-[var(--color-primary)] text-white rounded-full font-medium"
           >
             <SlidersHorizontal className="w-5 h-5" />
             Filters
           </button>
 
-          {/* View Mode Toggle */}
-          <div className="hidden md:flex items-center gap-2 border border-[var(--color-border)] rounded-xl p-1 bg-white">
+          {/* Grid Toggle - Desktop */}
+          <div className="hidden lg:flex items-center gap-1 bg-[var(--color-bg-cream)] rounded-full p-1">
             <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-[var(--color-primary)] text-white' : ''}`}
+              onClick={() => setGridCols(3)}
+              className={`p-2.5 rounded-full transition-colors ${gridCols === 3 ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}`}
             >
               <Grid className="w-5 h-5" />
             </button>
             <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-[var(--color-primary)] text-white' : ''}`}
+              onClick={() => setGridCols(4)}
+              className={`p-2.5 rounded-full transition-colors ${gridCols === 4 ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text)]'}`}
             >
-              <List className="w-5 h-5" />
+              <LayoutGrid className="w-5 h-5" />
             </button>
           </div>
         </div>
 
+        {/* Main Content */}
         <div className="flex gap-8">
-          {/* Sidebar Filters - Desktop */}
-          <div className="hidden md:block w-64 flex-shrink-0">
-            <div className="bg-white rounded-2xl p-6 shadow-sm sticky top-24">
-              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                <Filter className="w-5 h-5" />
-                Filters
-              </h3>
-
-              {/* Categories */}
-              <div className="mb-6">
-                <h4 className="font-semibold mb-3 text-[var(--color-text)]">Categories</h4>
-                <div className="space-y-2">
-                  {categories.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        selectedCategory === category
-                          ? 'bg-[var(--color-primary)] text-white'
-                          : 'hover:bg-[var(--color-background)] text-[var(--color-text)]'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Price Range */}
-              <div className="mb-6">
-                <h4 className="font-semibold mb-3 text-[var(--color-text)]">Price Range</h4>
-                <div className="space-y-4">
-                  <input
-                    type="range"
-                    min="0"
-                    max="200"
-                    value={priceRange[1]}
-                    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                    className="w-full accent-[var(--color-primary)]"
-                  />
-                  <div className="flex justify-between text-sm text-[var(--color-text-light)]">
-                    <span>${priceRange[0]}</span>
-                    <span>${priceRange[1]}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Reset Filters */}
-              <button
-                onClick={() => {
-                  setSelectedCategory('All');
-                  setPriceRange([0, 200]);
-                  setSearchQuery('');
-                }}
-                className="w-full py-2 text-[var(--color-primary)] border border-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)] hover:text-white transition-colors"
-              >
-                Reset Filters
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile Filters Panel */}
-          <AnimatePresence>
-            {isFilterOpen && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 z-50 md:hidden"
-                onClick={() => setIsFilterOpen(false)}
-              >
-                <motion.div
-                  initial={{ x: '100%' }}
-                  animate={{ x: 0 }}
-                  exit={{ x: '100%' }}
-                  transition={{ type: 'tween' }}
-                  className="absolute right-0 top-0 h-full w-80 bg-white p-6 overflow-y-auto"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-bold text-lg">Filters</h3>
-                    <button onClick={() => setIsFilterOpen(false)}>
-                      <X className="w-6 h-6" />
-                    </button>
-                  </div>
-
-                  {/* Categories */}
-                  <div className="mb-6">
-                    <h4 className="font-semibold mb-3">Categories</h4>
-                    <div className="space-y-2">
-                      {categories.map((category) => (
-                        <button
-                          key={category}
-                          onClick={() => {
-                            setSelectedCategory(category);
-                            setIsFilterOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                            selectedCategory === category
-                              ? 'bg-[var(--color-primary)] text-white'
-                              : 'hover:bg-[var(--color-background)]'
-                          }`}
-                        >
-                          {category}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Price Range */}
-                  <div className="mb-6">
-                    <h4 className="font-semibold mb-3">Price Range</h4>
-                    <input
-                      type="range"
-                      min="0"
-                      max="200"
-                      value={priceRange[1]}
-                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                      className="w-full accent-[var(--color-primary)]"
-                    />
-                    <div className="flex justify-between text-sm text-[var(--color-text-light)] mt-2">
-                      <span>${priceRange[0]}</span>
-                      <span>${priceRange[1]}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setSelectedCategory('All');
-                      setPriceRange([0, 200]);
-                      setSearchQuery('');
-                      setIsFilterOpen(false);
-                    }}
-                    className="w-full py-3 text-[var(--color-primary)] border border-[var(--color-primary)] rounded-lg"
-                  >
-                    Reset Filters
-                  </button>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Sidebar Filter */}
+          <SidebarFilter
+            products={products}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+          />
 
           {/* Products Grid */}
           <div className="flex-1">
-            {/* Results Count */}
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-[var(--color-text-light)]">
-                Showing <span className="font-semibold text-[var(--color-text)]">{filteredProducts.length}</span> products
-              </p>
-              {selectedCategory !== 'All' && (
-                <button
-                  onClick={() => setSelectedCategory('All')}
-                  className="flex items-center gap-1 text-sm text-[var(--color-primary)]"
-                >
-                  <X className="w-4 h-4" />
-                  Clear: {selectedCategory}
-                </button>
-              )}
-            </div>
-
-            {/* Products */}
-            {filteredProducts.length > 0 ? (
-              <div className={`grid gap-6 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
-                  : 'grid-cols-1'
-              }`}>
-                {filteredProducts.map((product, index) => (
-                  <ProductCard key={product.id} product={product} index={index} />
-                ))}
-              </div>
-            ) : (
+            {filteredProducts.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="text-center py-20"
               >
-                <div className="text-6xl mb-4">🔍</div>
-                <h3 className="text-xl font-semibold text-[var(--color-text)] mb-2">
-                  No products found
-                </h3>
-                <p className="text-[var(--color-text-light)] mb-6">
+                <div className="w-20 h-20 bg-[var(--color-bg-cream)] rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Search className="w-8 h-8 text-[var(--color-text-muted)]" />
+                </div>
+                <h3 className="text-xl font-semibold text-[var(--color-text)] mb-2">No products found</h3>
+                <p className="text-[var(--color-text-muted)] mb-6">
                   Try adjusting your search or filter criteria
                 </p>
                 <button
                   onClick={() => {
+                    setSearchQuery('');
                     setSelectedCategory('All');
                     setPriceRange([0, 200]);
-                    setSearchQuery('');
                   }}
-                  className="btn-primary"
+                  className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-full font-medium hover:bg-[var(--color-primary-light)] transition-colors"
                 >
                   Clear All Filters
                 </button>
               </motion.div>
+            ) : (
+              <>
+                <div className={`grid gap-6 ${
+                  gridCols === 4 
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                    : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+                }`}>
+                  <AnimatePresence mode="popLayout">
+                    {filteredProducts.map((product, index) => (
+                      <motion.div
+                        key={product.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ delay: index * 0.03 }}
+                      >
+                        <ProductCard product={product} index={index} />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                {/* Load More Button */}
+                {filteredProducts.length >= 12 && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-12 text-center"
+                  >
+                    <button className="px-8 py-4 bg-[var(--color-bg-cream)] text-[var(--color-text)] rounded-full font-medium hover:bg-[var(--color-primary)] hover:text-white transition-colors">
+                      Load More Products
+                    </button>
+                  </motion.div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -363,7 +252,7 @@ export default function ProductsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[var(--color-primary)] border-t-transparent"></div>
+        <div className="w-8 h-8 border-4 border-[var(--color-secondary)] border-t-transparent rounded-full animate-spin"></div>
       </div>
     }>
       <ProductsContent />

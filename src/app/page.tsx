@@ -1,11 +1,10 @@
 'use client';
 
-import HeroSection from '@/components/home/HeroSection';
-import CategoriesSection from '@/components/home/CategoriesSection';
-import FeaturedProducts from '@/components/home/FeaturedProducts';
-import TestimonialsSection from '@/components/home/TestimonialsSection';
-import FeaturesSection from '@/components/home/FeaturesSection';
-import PromoSection from '@/components/home/PromoSection';
+import HeroSection from '@/components/home/HeroSectionNew';
+import CategoriesSection from '@/components/home/CategoriesSectionNew';
+import FeaturedProducts from '@/components/home/FeaturedProductsNew';
+import PromoBanner from '@/components/home/PromoBannerNew';
+import FeaturesSection from '@/components/home/FeaturesSectionNew';
 
 export default function Home() {
   return (
@@ -13,9 +12,8 @@ export default function Home() {
       <HeroSection />
       <CategoriesSection />
       <FeaturedProducts />
-      <PromoSection />
+      <PromoBanner />
       <FeaturesSection />
-      <TestimonialsSection />
     </>
   );
 }
