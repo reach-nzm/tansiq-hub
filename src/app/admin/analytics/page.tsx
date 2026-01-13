@@ -185,7 +185,10 @@ export default function AdminAnalyticsPage() {
                     border: '1px solid #e5e5e5',
                     borderRadius: '8px',
                   }}
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Revenue']}
+                  formatter={(value: number | string | undefined) => {
+                    const numValue = Number(value || 0);
+                    return [`$${numValue.toLocaleString()}`, 'Revenue'];
+                  }}
                 />
                 <Area
                   type="monotone"

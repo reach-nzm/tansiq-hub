@@ -380,6 +380,16 @@ const sampleUsers: User[] = [
     totalSpent: 423.00,
   },
   {
+    id: 'DEMO001',
+    name: 'Demo User',
+    email: 'demo@tansiqhub.com',
+    phone: '+1 (555) 123-4567',
+    role: 'customer',
+    createdAt: '2025-12-15T00:00:00Z',
+    orders: 3,
+    totalSpent: 287.50,
+  },
+  {
     id: 'ADMIN001',
     name: 'Admin User',
     email: 'admin@tansiqhub.com',

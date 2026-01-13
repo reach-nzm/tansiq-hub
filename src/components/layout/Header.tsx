@@ -26,7 +26,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
-  const { getCartCount, searchQuery, setSearchQuery } = useStore();
+  const { getCartCount, searchQuery, setSearchQuery, currentUser } = useStore();
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md">
@@ -144,13 +144,14 @@ export default function Header() {
               <Search className="w-5 h-5" />
             </button>
 
-            {/* Wishlist */}
-            <Link 
-              href="/wishlist"
+            {/* Wishlist - Coming Soon */}
+            <button 
+              onClick={() => alert('Wishlist feature coming soon!')}
               className="hidden sm:flex p-2 hover:bg-[var(--color-background)] rounded-full transition-colors relative"
+              title="Wishlist"
             >
               <Heart className="w-5 h-5" />
-            </Link>
+            </button>
 
             {/* Cart */}
             <Link 
@@ -169,10 +170,11 @@ export default function Header() {
               )}
             </Link>
 
-            {/* User */}
+            {/* User Profile/Login */}
             <Link 
-              href="/admin"
+              href="/profile"
               className="hidden sm:flex p-2 hover:bg-[var(--color-background)] rounded-full transition-colors"
+              title="Profile"
             >
               <User className="w-5 h-5" />
             </Link>
@@ -259,13 +261,34 @@ export default function Header() {
               >
                 Contact
               </Link>
-              <Link 
-                href="/admin"
-                onClick={() => setIsMenuOpen(false)}
-                className="px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg transition-colors font-medium text-center mt-2"
-              >
-                Admin Panel
-              </Link>
+              {currentUser ? (
+                <>
+                  <Link 
+                    href="/profile"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg transition-colors font-medium text-center mt-2"
+                  >
+                    My Profile
+                  </Link>
+                  {currentUser.role === 'admin' && (
+                    <Link 
+                      href="/admin"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="px-4 py-3 bg-[var(--color-secondary)] text-[var(--color-primary-dark)] rounded-lg transition-colors font-medium text-center mt-2"
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                </>
+              ) : (
+                <Link 
+                  href="/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg transition-colors font-medium text-center mt-2"
+                >
+                  Sign In
+                </Link>
+              )}
             </nav>
           </motion.div>
         )}
