@@ -130,15 +130,16 @@ export async function POST(request: NextRequest) {
     const created = db.createProduct(product);
 
     // Also create inventory item
-    db.updateInventory(product.id, {
+    const inventoryId = `inv-${product.id}`;
+    db.updateInventory(inventoryId, {
+      id: inventoryId,
       productId: product.id,
       sku: body.sku || `SKU-${product.id}`,
       quantity: product.stock,
       reservedQuantity: 0,
-      availableQuantity: product.stock,
+      incomingQuantity: 0,
       lowStockThreshold: body.low_stock_threshold || 10,
-      trackInventory: body.track_inventory !== false,
-      allowBackorder: body.allow_backorder || false,
+      tracked: body.track_inventory !== false,
       updatedAt: new Date().toISOString(),
     });
 

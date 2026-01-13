@@ -1,7 +1,82 @@
 // Database Layer - Shopify-like Data Management
 // This can be easily swapped with a real database (MongoDB, PostgreSQL, etc.)
 
-import { Product, Order, User } from '@/store/useStore';
+import { Product as StoreProduct, Order as StoreOrder, User } from '@/store/useStore';
+
+// Extended Product type for API
+export interface Product extends StoreProduct {
+  handle?: string;
+  compareAtPrice?: number;
+}
+
+// Extended Order type for Shopify-like API
+export interface Order {
+  id: string;
+  orderNumber: number;
+  email: string;
+  customerId?: string;
+  items: OrderLineItem[];
+  subtotal: number;
+  totalDiscount: number;
+  totalShipping: number;
+  totalTax: number;
+  total: number;
+  currency: string;
+  financialStatus: 'pending' | 'paid' | 'partially_paid' | 'refunded' | 'voided';
+  fulfillmentStatus: 'unfulfilled' | 'partial' | 'fulfilled';
+  shippingAddress: any;
+  billingAddress: any;
+  shippingMethod: string;
+  paymentMethod: string;
+  note?: string;
+  tags: string[];
+  discountCodes: string[];
+  fulfillments: any[];
+  refunds: any[];
+  createdAt: string;
+  updatedAt: string;
+  // For compatibility with store Order
+  status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  customer?: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    country: string;
+  };
+}
+
+export interface OrderLineItem {
+  id: string;
+  productId: string;
+  variantId?: string;
+  title: string;
+  quantity: number;
+  price: number;
+  totalDiscount: number;
+  sku: string;
+}
+
+// Extended Customer type
+export interface Customer {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  addresses: Address[];
+  defaultAddress?: Address;
+  totalOrders: number;
+  totalSpent: number;
+  tags: string[];
+  acceptsMarketing: boolean;
+  createdAt: string;
+  // For compatibility with User type
+  name?: string;
+  role?: 'customer' | 'admin';
+  orders?: number;
+}
 
 export interface Collection {
   id: string;
@@ -10,6 +85,7 @@ export interface Collection {
   description: string;
   image?: string;
   products: string[]; // Product IDs
+  productIds?: string[]; // Alias for compatibility
   sortOrder: 'manual' | 'best-selling' | 'alpha-asc' | 'alpha-desc' | 'price-asc' | 'price-desc' | 'created-desc' | 'created-asc';
   published: boolean;
   createdAt: string;
@@ -34,73 +110,71 @@ export interface Discount {
 }
 
 export interface InventoryItem {
+  id: string;
   productId: string;
-  sku: string;
+  variantId?: string;
+  sku?: string;
   quantity: number;
-  reservedQuantity: number;
-  availableQuantity: number;
-  lowStockThreshold: number;
-  trackInventory: boolean;
-  allowBackorder: boolean;
+  reservedQuantity?: number;
+  incomingQuantity?: number;
+  lowStockThreshold?: number;
+  tracked: boolean;
   updatedAt: string;
 }
+
+export interface Inventory extends InventoryItem {}
 
 export interface ShippingRate {
   id: string;
   name: string;
   price: number;
-  minOrderAmount?: number;
-  maxOrderAmount?: number;
-  minWeight?: number;
-  maxWeight?: number;
-  estimatedDays: { min: number; max: number };
-  active: boolean;
+  minOrder?: number;
+  maxOrder?: number;
+  minDays: number;
+  maxDays: number;
+  countries?: string[];
+  active?: boolean;
 }
 
 export interface Cart {
   id: string;
+  token: string;
   customerId?: string;
   items: CartItem[];
   discountCodes: string[];
-  note?: string;
+  note: string;
+  attributes: Record<string, any>;
+  shippingRate: { name: string; price: number } | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CartItem {
+  id: string;
   productId: string;
   variantId?: string;
   quantity: number;
   price: number;
   title: string;
-  image: string;
+  image?: string;
+  properties: Record<string, any>;
 }
 
 export interface Address {
-  id: string;
-  firstName: string;
-  lastName: string;
+  id?: string;
+  first_name?: string;
+  last_name?: string;
+  firstName?: string;
+  lastName?: string;
   company?: string;
   address1: string;
   address2?: string;
   city: string;
-  province: string;
+  province?: string;
   country: string;
   zip: string;
   phone?: string;
-  default: boolean;
-}
-
-export interface Customer extends User {
-  addresses: Address[];
-  tags: string[];
-  note?: string;
-  taxExempt: boolean;
-  acceptsMarketing: boolean;
-  ordersCount: number;
-  totalSpent: number;
-  lastOrderId?: string;
-  lastOrderDate?: string;
+  default?: boolean;
 }
 
 export interface Webhook {
@@ -110,18 +184,22 @@ export interface Webhook {
   format: 'json' | 'xml';
   active: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface StoreSettings {
+  id: string;
   name: string;
   email: string;
   phone?: string;
+  domain: string;
   address: Address;
   currency: string;
   timezone: string;
   weightUnit: 'kg' | 'lb';
   taxesIncluded: boolean;
-  taxRate: number;
+  taxShipping: boolean;
+  createdAt: string;
 }
 
 // In-memory database (can be replaced with real DB)
@@ -139,8 +217,11 @@ class Database {
 
   constructor() {
     this.storeSettings = {
+      id: 'store-1',
       name: 'Tansiq Hub',
       email: 'support@tansiqhub.com',
+      phone: '+1 (555) 000-1234',
+      domain: 'tansiqhub.com',
       address: {
         id: 'store-address',
         firstName: 'Tansiq',
@@ -156,7 +237,8 @@ class Database {
       timezone: 'America/New_York',
       weightUnit: 'kg',
       taxesIncluded: false,
-      taxRate: 0.08,
+      taxShipping: false,
+      createdAt: new Date().toISOString(),
     };
     this.seedData();
   }
@@ -357,14 +439,14 @@ class Database {
     // Seed inventory
     sampleProducts.forEach(p => {
       this.inventory.set(p.id, {
+        id: `inv-${p.id}`,
         productId: p.id,
         sku: `SKU-${p.id.padStart(6, '0')}`,
         quantity: p.stock,
         reservedQuantity: 0,
-        availableQuantity: p.stock,
+        incomingQuantity: 0,
         lowStockThreshold: 10,
-        trackInventory: true,
-        allowBackorder: false,
+        tracked: true,
         updatedAt: new Date().toISOString(),
       });
     });
@@ -479,22 +561,25 @@ class Database {
         id: 'ship-1',
         name: 'Standard Shipping',
         price: 5.99,
-        estimatedDays: { min: 5, max: 7 },
+        minDays: 5,
+        maxDays: 7,
         active: true,
       },
       {
         id: 'ship-2',
         name: 'Express Shipping',
         price: 15.99,
-        estimatedDays: { min: 2, max: 3 },
+        minDays: 2,
+        maxDays: 3,
         active: true,
       },
       {
         id: 'ship-3',
         name: 'Free Shipping',
         price: 0,
-        minOrderAmount: 75,
-        estimatedDays: { min: 7, max: 10 },
+        minOrder: 75,
+        minDays: 7,
+        maxDays: 10,
         active: true,
       },
     ];
@@ -505,12 +590,15 @@ class Database {
     const customers: Customer[] = [
       {
         id: 'DEMO001',
+        firstName: 'Demo',
+        lastName: 'User',
         name: 'Demo User',
         email: 'demo@tansiqhub.com',
         phone: '+1 (555) 123-4567',
         role: 'customer',
         createdAt: '2025-12-15T00:00:00Z',
         orders: 3,
+        totalOrders: 3,
         totalSpent: 287.50,
         addresses: [
           {
@@ -527,22 +615,21 @@ class Database {
           },
         ],
         tags: ['demo', 'vip'],
-        taxExempt: false,
         acceptsMarketing: true,
-        ordersCount: 3,
-        lastOrderDate: '2026-01-10T00:00:00Z',
       },
       {
         id: 'ADMIN001',
+        firstName: 'Admin',
+        lastName: 'User',
         name: 'Admin User',
         email: 'admin@tansiqhub.com',
+        phone: '',
         role: 'admin',
         createdAt: '2025-01-01T00:00:00Z',
         addresses: [],
         tags: ['admin'],
-        taxExempt: true,
         acceptsMarketing: false,
-        ordersCount: 0,
+        totalOrders: 0,
         totalSpent: 0,
       },
     ];
@@ -553,12 +640,30 @@ class Database {
     const orders: Order[] = [
       {
         id: 'ORD-001',
+        orderNumber: 1001,
+        email: 'demo@tansiqhub.com',
+        customerId: 'DEMO001',
         items: [
-          { ...sampleProducts[0], quantity: 2 },
-          { ...sampleProducts[1], quantity: 1 },
+          { id: 'line-1', productId: '1', title: sampleProducts[0].name, quantity: 2, price: sampleProducts[0].price, totalDiscount: 0, sku: 'SKU-000001' },
+          { id: 'line-2', productId: '2', title: sampleProducts[1].name, quantity: 1, price: sampleProducts[1].price, totalDiscount: 0, sku: 'SKU-000002' },
         ],
-        total: 68.97,
+        subtotal: 68.97,
+        totalDiscount: 0,
+        totalShipping: 5.99,
+        totalTax: 5.52,
+        total: 80.48,
+        currency: 'USD',
+        financialStatus: 'paid',
+        fulfillmentStatus: 'fulfilled',
         status: 'delivered',
+        shippingAddress: { firstName: 'Demo', lastName: 'User', address1: '123 Main St', city: 'New York', country: 'United States', zip: '10001' },
+        billingAddress: { firstName: 'Demo', lastName: 'User', address1: '123 Main St', city: 'New York', country: 'United States', zip: '10001' },
+        shippingMethod: 'Standard Shipping',
+        paymentMethod: 'credit_card',
+        tags: [],
+        discountCodes: [],
+        fulfillments: [],
+        refunds: [],
         customer: {
           name: 'Demo User',
           email: 'demo@tansiqhub.com',
@@ -572,11 +677,29 @@ class Database {
       },
       {
         id: 'ORD-002',
+        orderNumber: 1002,
+        email: 'demo@tansiqhub.com',
+        customerId: 'DEMO001',
         items: [
-          { ...sampleProducts[2], quantity: 1 },
+          { id: 'line-3', productId: '3', title: sampleProducts[2].name, quantity: 1, price: sampleProducts[2].price, totalDiscount: 0, sku: 'SKU-000003' },
         ],
-        total: 45.99,
+        subtotal: 45.99,
+        totalDiscount: 0,
+        totalShipping: 5.99,
+        totalTax: 3.68,
+        total: 55.66,
+        currency: 'USD',
+        financialStatus: 'paid',
+        fulfillmentStatus: 'partial',
         status: 'shipped',
+        shippingAddress: { firstName: 'Demo', lastName: 'User', address1: '123 Main St', city: 'New York', country: 'United States', zip: '10001' },
+        billingAddress: { firstName: 'Demo', lastName: 'User', address1: '123 Main St', city: 'New York', country: 'United States', zip: '10001' },
+        shippingMethod: 'Standard Shipping',
+        paymentMethod: 'credit_card',
+        tags: [],
+        discountCodes: [],
+        fulfillments: [],
+        refunds: [],
         customer: {
           name: 'Demo User',
           email: 'demo@tansiqhub.com',
@@ -677,12 +800,16 @@ class Database {
 
   // Inventory methods
   getInventory() { return Array.from(this.inventory.values()); }
-  getInventoryItem(productId: string) { return this.inventory.get(productId); }
-  updateInventory(productId: string, updates: Partial<InventoryItem>) {
-    const item = this.inventory.get(productId);
+  getInventoryItem(id: string) { 
+    return Array.from(this.inventory.values()).find(i => i.id === id);
+  }
+  getInventoryByProduct(productId: string) { return this.inventory.get(productId); }
+  updateInventory(id: string, updates: Partial<InventoryItem>) {
+    // Find by inventory id
+    const item = Array.from(this.inventory.values()).find(i => i.id === id);
     if (item) {
       const updated = { ...item, ...updates, updatedAt: new Date().toISOString() };
-      this.inventory.set(productId, updated);
+      this.inventory.set(item.productId, updated);
       return updated;
     }
     return null;
@@ -691,7 +818,6 @@ class Database {
     const item = this.inventory.get(productId);
     if (item) {
       item.quantity += adjustment;
-      item.availableQuantity = item.quantity - item.reservedQuantity;
       item.updatedAt = new Date().toISOString();
       return item;
     }
@@ -714,14 +840,40 @@ class Database {
   deleteCart(id: string) { return this.carts.delete(id); }
 
   // Shipping methods
-  getShippingRates() { return Array.from(this.shippingRates.values()).filter(r => r.active); }
+  getShippingRates() { return Array.from(this.shippingRates.values()); }
   getShippingRate(id: string) { return this.shippingRates.get(id); }
+  createShippingRate(rate: ShippingRate) { this.shippingRates.set(rate.id, rate); return rate; }
+  updateShippingRate(id: string, updates: Partial<ShippingRate>) {
+    const rate = this.shippingRates.get(id);
+    if (rate) {
+      const updated = { ...rate, ...updates };
+      this.shippingRates.set(id, updated);
+      return updated;
+    }
+    return null;
+  }
+  deleteShippingRate(id: string) { return this.shippingRates.delete(id); }
+  deleteCustomer(id: string) { return this.customers.delete(id); }
 
   // Webhook methods
   getWebhooks() { return Array.from(this.webhooks.values()); }
   getWebhook(id: string) { return this.webhooks.get(id); }
   createWebhook(webhook: Webhook) { this.webhooks.set(webhook.id, webhook); return webhook; }
+  updateWebhook(id: string, updates: Partial<Webhook>) {
+    const webhook = this.webhooks.get(id);
+    if (webhook) {
+      const updated = { ...webhook, ...updates };
+      this.webhooks.set(id, updated);
+      return updated;
+    }
+    return null;
+  }
   deleteWebhook(id: string) { return this.webhooks.delete(id); }
+
+  // Cart methods - additional
+  getCartByToken(token: string) {
+    return Array.from(this.carts.values()).find(c => c.token === token);
+  }
 
   // Store settings
   getStoreSettings() { return this.storeSettings; }

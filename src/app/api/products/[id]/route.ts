@@ -24,15 +24,15 @@ export async function GET(request: NextRequest, { params }: Params) {
     }
 
     // Get inventory info
-    const inventory = db.getInventoryItem(id);
+    const inventory = db.getInventoryByProduct(id);
 
     return successResponse({
       product: {
         ...product,
         inventory: inventory ? {
           sku: inventory.sku,
-          available: inventory.availableQuantity,
-          tracked: inventory.trackInventory,
+          available: inventory.quantity - (inventory.reservedQuantity || 0),
+          tracked: inventory.tracked,
         } : null,
       },
     });
@@ -74,10 +74,12 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
     // Update inventory if stock changed
     if (body.stock !== undefined) {
-      db.updateInventory(id, {
-        quantity: parseInt(body.stock),
-        availableQuantity: parseInt(body.stock),
-      });
+      const inventory = db.getInventoryByProduct(id);
+      if (inventory) {
+        db.updateInventory(inventory.id, {
+          quantity: parseInt(body.stock),
+        });
+      }
     }
 
     return successResponse({ product: updated });

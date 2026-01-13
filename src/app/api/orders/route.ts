@@ -1,6 +1,6 @@
 // Orders API - Shopify-like Order Management
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
+import { db, Order } from '@/lib/db';
 import {
   successResponse,
   errorResponse,
@@ -11,7 +11,6 @@ import {
   parseQueryParams,
   validateRequired,
 } from '@/lib/api/helpers';
-import { Order } from '@/store/useStore';
 
 // GET /api/orders - List all orders
 export async function GET(request: NextRequest) {
@@ -26,19 +25,19 @@ export async function GET(request: NextRequest) {
     const financialStatus = url.searchParams.get('financial_status');
     const fulfillmentStatus = url.searchParams.get('fulfillment_status');
 
-    let orders = db.getOrders();
+    let orders = db.getOrders() as any[];
 
     // Filter by customer
     if (customerId) {
       const customer = db.getCustomer(customerId);
       if (customer) {
-        orders = orders.filter(o => o.customer.email === customer.email);
+        orders = orders.filter(o => (o.email || o.customer?.email) === customer.email);
       }
     }
 
     // Filter by email
     if (email) {
-      orders = orders.filter(o => o.customer.email.toLowerCase() === email.toLowerCase());
+      orders = orders.filter(o => (o.email || o.customer?.email)?.toLowerCase() === email.toLowerCase());
     }
 
     // Filter by status
@@ -54,7 +53,7 @@ export async function GET(request: NextRequest) {
         'partial': ['processing'],
       };
       const allowedStatuses = statusMap[fulfillmentStatus] || [];
-      orders = orders.filter(o => allowedStatuses.includes(o.status));
+      orders = orders.filter(o => o.status && allowedStatuses.includes(o.status));
     }
 
     // Filter by date range
@@ -78,39 +77,39 @@ export async function GET(request: NextRequest) {
     const { items, meta } = paginate(orders, page, limit);
 
     // Format orders for response
-    const formattedOrders = items.map(o => ({
+    const formattedOrders = items.map((o: any) => ({
       id: o.id,
-      order_number: o.id.replace('ORD-', ''),
-      email: o.customer.email,
+      order_number: o.orderNumber || o.id.replace('ORD-', ''),
+      email: o.email || o.customer?.email,
       created_at: o.createdAt,
       updated_at: o.updatedAt,
       total_price: o.total.toFixed(2),
-      subtotal_price: o.items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2),
-      total_tax: (o.total * 0.08).toFixed(2),
-      currency: 'USD',
-      financial_status: 'paid',
-      fulfillment_status: o.status === 'delivered' ? 'fulfilled' : o.status === 'shipped' ? 'partial' : null,
-      name: `#${o.id.replace('ORD-', '')}`,
-      line_items: o.items.map(item => ({
+      subtotal_price: (o.subtotal || o.items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)).toFixed(2),
+      total_tax: (o.totalTax || o.total * 0.08).toFixed(2),
+      currency: o.currency || 'USD',
+      financial_status: o.financialStatus || 'paid',
+      fulfillment_status: o.fulfillmentStatus || (o.status === 'delivered' ? 'fulfilled' : o.status === 'shipped' ? 'partial' : null),
+      name: `#${o.orderNumber || o.id.replace('ORD-', '')}`,
+      line_items: o.items.map((item: any) => ({
         id: item.id,
-        product_id: item.id,
-        title: item.name,
+        product_id: item.productId || item.id,
+        title: item.title || item.name,
         quantity: item.quantity,
         price: item.price.toFixed(2),
         total_discount: '0.00',
       })),
-      customer: {
+      customer: o.customer ? {
         id: o.customer.email,
         email: o.customer.email,
-        first_name: o.customer.name.split(' ')[0],
-        last_name: o.customer.name.split(' ').slice(1).join(' '),
+        first_name: o.customer.name?.split(' ')[0] || '',
+        last_name: o.customer.name?.split(' ').slice(1).join(' ') || '',
         phone: o.customer.phone,
-      },
-      shipping_address: {
+      } : null,
+      shipping_address: o.shippingAddress || (o.customer ? {
         address1: o.customer.address,
         city: o.customer.city,
         country: o.customer.country,
-      },
+      } : null),
       status: o.status,
     }));
 
