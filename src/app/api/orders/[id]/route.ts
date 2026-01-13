@@ -15,76 +15,81 @@ interface Params {
 export async function GET(request: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
-    const order = db.getOrder(id);
+    const order = db.getOrder(id) as any;
 
     if (!order) {
       return notFoundResponse('Order');
     }
 
+    const email = order.email || order.customer?.email || '';
+    const customerName = order.customer?.name || `${order.shippingAddress?.firstName || ''} ${order.shippingAddress?.lastName || ''}`.trim();
+    const subtotal = order.subtotal || order.items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+    const status = order.status || (order.fulfillmentStatus === 'fulfilled' ? 'delivered' : 'pending');
+
     return successResponse({
       order: {
         id: order.id,
-        order_number: order.id.replace('ORD-', ''),
-        email: order.customer.email,
+        order_number: order.orderNumber || order.id.replace('ORD-', ''),
+        email: email,
         created_at: order.createdAt,
         updated_at: order.updatedAt,
-        closed_at: order.status === 'delivered' ? order.updatedAt : null,
-        cancelled_at: order.status === 'cancelled' ? order.updatedAt : null,
+        closed_at: status === 'delivered' ? order.updatedAt : null,
+        cancelled_at: status === 'cancelled' ? order.updatedAt : null,
         total_price: order.total.toFixed(2),
-        subtotal_price: order.items.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2),
-        total_tax: (order.total * 0.08).toFixed(2),
-        total_discounts: '0.00',
-        currency: 'USD',
-        financial_status: 'paid',
-        fulfillment_status: order.status === 'delivered' ? 'fulfilled' : order.status === 'shipped' ? 'partial' : null,
-        name: `#${order.id.replace('ORD-', '')}`,
-        note: null,
-        line_items: order.items.map((item, index) => ({
-          id: `li-${index}`,
-          product_id: item.id,
-          variant_id: item.id,
-          title: item.name,
+        subtotal_price: subtotal.toFixed(2),
+        total_tax: (order.totalTax || order.total * 0.08).toFixed(2),
+        total_discounts: (order.totalDiscount || 0).toFixed(2),
+        currency: order.currency || 'USD',
+        financial_status: order.financialStatus || 'paid',
+        fulfillment_status: order.fulfillmentStatus || (status === 'delivered' ? 'fulfilled' : status === 'shipped' ? 'partial' : null),
+        name: `#${order.orderNumber || order.id.replace('ORD-', '')}`,
+        note: order.note || null,
+        line_items: order.items.map((item: any, index: number) => ({
+          id: item.id || `li-${index}`,
+          product_id: item.productId || item.id,
+          variant_id: item.variantId || item.id,
+          title: item.title || item.name,
           quantity: item.quantity,
           price: item.price.toFixed(2),
-          sku: `SKU-${item.id.padStart(6, '0')}`,
-          fulfillable_quantity: order.status === 'pending' ? item.quantity : 0,
-          fulfillment_status: order.status === 'delivered' ? 'fulfilled' : null,
+          sku: item.sku || `SKU-${(item.productId || item.id).toString().padStart(6, '0')}`,
+          fulfillable_quantity: status === 'pending' ? item.quantity : 0,
+          fulfillment_status: status === 'delivered' ? 'fulfilled' : null,
         })),
-        customer: {
-          id: order.customer.email,
+        customer: order.customer ? {
+          id: order.customerId || order.customer.email,
           email: order.customer.email,
-          first_name: order.customer.name.split(' ')[0],
-          last_name: order.customer.name.split(' ').slice(1).join(' '),
+          first_name: customerName.split(' ')[0],
+          last_name: customerName.split(' ').slice(1).join(' '),
           phone: order.customer.phone,
           orders_count: 1,
           total_spent: order.total.toFixed(2),
-        },
-        billing_address: {
-          first_name: order.customer.name.split(' ')[0],
-          last_name: order.customer.name.split(' ').slice(1).join(' '),
+        } : null,
+        billing_address: order.billingAddress || (order.customer ? {
+          first_name: customerName.split(' ')[0],
+          last_name: customerName.split(' ').slice(1).join(' '),
           address1: order.customer.address,
           city: order.customer.city,
           country: order.customer.country,
           phone: order.customer.phone,
-        },
-        shipping_address: {
-          first_name: order.customer.name.split(' ')[0],
-          last_name: order.customer.name.split(' ').slice(1).join(' '),
+        } : null),
+        shipping_address: order.shippingAddress || (order.customer ? {
+          first_name: customerName.split(' ')[0],
+          last_name: customerName.split(' ').slice(1).join(' '),
           address1: order.customer.address,
           city: order.customer.city,
           country: order.customer.country,
           phone: order.customer.phone,
-        },
-        fulfillments: order.status === 'shipped' || order.status === 'delivered' ? [{
+        } : null),
+        fulfillments: order.fulfillments?.length ? order.fulfillments : (status === 'shipped' || status === 'delivered' ? [{
           id: `ful-${order.id}`,
           order_id: order.id,
-          status: order.status === 'delivered' ? 'success' : 'pending',
+          status: status === 'delivered' ? 'success' : 'pending',
           created_at: order.updatedAt,
           tracking_number: null,
           tracking_url: null,
-        }] : [],
-        refunds: [],
-        status: order.status,
+        }] : []),
+        refunds: order.refunds || [],
+        status: status,
       },
     });
   } catch (error) {

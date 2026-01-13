@@ -244,7 +244,12 @@ async function handleCompleteCheckout(body: any, request: NextRequest) {
     'first_name', 'last_name', 'address1', 'city', 'country', 'zip'
   ]);
   if (addressFields) {
-    return validationError({ shipping_address: addressFields });
+    // Flatten address errors with prefix
+    const flattenedErrors: Record<string, string[]> = {};
+    for (const [key, value] of Object.entries(addressFields)) {
+      flattenedErrors[`shipping_address.${key}`] = value;
+    }
+    return validationError(flattenedErrors);
   }
 
   // Validate inventory one more time

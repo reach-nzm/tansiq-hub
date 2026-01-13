@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Build order items
-    const items = [];
+    const items: any[] = [];
     let subtotal = 0;
 
     for (const lineItem of body.line_items) {
@@ -148,9 +148,13 @@ export async function POST(request: NextRequest) {
       const price = lineItem.price ? parseFloat(lineItem.price) : product.price;
 
       items.push({
-        ...product,
+        id: generateId('line'),
+        productId: product.id,
+        title: product.name,
         quantity,
         price,
+        totalDiscount: 0,
+        sku: `SKU-${product.id}`,
       });
 
       subtotal += price * quantity;
@@ -166,10 +170,29 @@ export async function POST(request: NextRequest) {
     const discount = body.total_discounts ? parseFloat(body.total_discounts) : 0;
     const total = subtotal + tax + shipping - discount;
 
+    const orderNumber = 1000 + db.getOrders().length + 1;
     const order: Order = {
       id: `ORD-${generateId()}`.toUpperCase().slice(0, 12),
+      orderNumber,
+      email: body.customer.email,
+      customerId: body.customer.id,
       items,
+      subtotal,
+      totalDiscount: discount,
+      totalShipping: shipping,
+      totalTax: tax,
       total,
+      currency: 'USD',
+      financialStatus: 'paid',
+      fulfillmentStatus: 'unfulfilled',
+      shippingAddress: body.shipping_address || null,
+      billingAddress: body.billing_address || body.shipping_address || null,
+      shippingMethod: body.shipping_method || 'Standard Shipping',
+      paymentMethod: body.payment_method || 'credit_card',
+      tags: [],
+      discountCodes: [],
+      fulfillments: [],
+      refunds: [],
       status: 'pending',
       customer: {
         name: `${body.customer.first_name || ''} ${body.customer.last_name || ''}`.trim(),
@@ -186,24 +209,22 @@ export async function POST(request: NextRequest) {
     const created = db.createOrder(order);
 
     // Update customer stats
-    const customer = db.getCustomerByEmail(order.customer.email);
+    const customer = db.getCustomerByEmail(order.email);
     if (customer) {
       db.updateCustomer(customer.id, {
-        ordersCount: (customer.ordersCount || 0) + 1,
+        totalOrders: (customer.totalOrders || 0) + 1,
         totalSpent: (customer.totalSpent || 0) + total,
-        lastOrderId: order.id,
-        lastOrderDate: order.createdAt,
       });
     }
 
     return successResponse({
       order: {
         id: created.id,
-        order_number: created.id.replace('ORD-', ''),
+        order_number: created.orderNumber,
         created_at: created.createdAt,
         total_price: created.total.toFixed(2),
         status: created.status,
-        financial_status: 'paid',
+        financial_status: created.financialStatus,
         line_items_count: created.items.length,
       },
     });
