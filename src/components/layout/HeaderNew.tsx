@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ShoppingCart, 
   Search, 
@@ -31,6 +31,10 @@ export default function Header() {
   const { getCartCount, searchQuery, setSearchQuery, currentUser, cart, getCartTotal } = useStore();
   const cartCount = getCartCount();
   const cartTotal = getCartTotal();
+
+  // Avoid hydration mismatch: only render dynamic badge after mount
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   return (
     <header className="sticky top-0 z-50 bg-white">
@@ -121,7 +125,7 @@ export default function Header() {
               >
                 <div className="relative">
                   <ShoppingCart className="w-5 h-5 text-white" />
-                  {cartCount > 0 && (
+                  {mounted && cartCount > 0 && (
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
