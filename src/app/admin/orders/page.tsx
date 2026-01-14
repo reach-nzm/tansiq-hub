@@ -194,7 +194,7 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-bold text-[var(--color-text)]">
-                        ${order.total.toFixed(2)}
+                        ৳{order.total.toFixed(2)}
                       </p>
                       <p className="text-sm text-[var(--color-text-light)]">
                         {order.items.length} items
@@ -332,7 +332,7 @@ export default function AdminOrdersPage() {
                         </p>
                       </div>
                       <p className="font-bold">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        ৳{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   ))}
@@ -344,7 +344,7 @@ export default function AdminOrdersPage() {
                 <div className="flex items-center justify-between text-lg font-bold">
                   <span>Total</span>
                   <span className="text-[var(--color-primary)]">
-                    ${selectedOrder.total.toFixed(2)}
+                    ৳{selectedOrder.total.toFixed(2)}
                   </span>
                 </div>
 

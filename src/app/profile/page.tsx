@@ -235,7 +235,7 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-sm text-[var(--color-text-light)]">Total Spent</p>
                   <p className="text-2xl font-bold text-[var(--color-text)]">
-                    ${totalSpent.toFixed(2)}
+                    ৳{totalSpent.toFixed(2)}
                   </p>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function ProfilePage() {
                         {order.items.length} items
                       </td>
                       <td className="py-4 px-4 font-semibold text-[var(--color-text)]">
-                        ${order.total.toFixed(2)}
+                        ৳{order.total.toFixed(2)}
                       </td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${

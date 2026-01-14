@@ -27,7 +27,7 @@ const features = [
   {
     icon: Truck,
     title: 'Free Shipping',
-    description: 'Enjoy free shipping on all orders over $50 worldwide.',
+    description: 'Enjoy free shipping on all orders over ৳5000 worldwide.',
   },
   {
     icon: Clock,

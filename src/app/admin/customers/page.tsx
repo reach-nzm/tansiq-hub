@@ -193,7 +193,7 @@ export default function AdminCustomersPage() {
           <div className="flex items-center justify-between mb-2">
             <DollarSign className="w-8 h-8 text-green-500" />
           </div>
-          <h3 className="text-2xl font-bold">${totalRevenue.toFixed(2)}</h3>
+          <h3 className="text-2xl font-bold">৳{totalRevenue.toFixed(2)}</h3>
           <p className="text-sm text-[var(--color-text-light)]">Total Revenue</p>
         </motion.div>
 
@@ -219,7 +219,7 @@ export default function AdminCustomersPage() {
           <div className="flex items-center justify-between mb-2">
             <DollarSign className="w-8 h-8 text-purple-500" />
           </div>
-          <h3 className="text-2xl font-bold">${avgOrderValue.toFixed(2)}</h3>
+          <h3 className="text-2xl font-bold">৳{avgOrderValue.toFixed(2)}</h3>
           <p className="text-sm text-[var(--color-text-light)]">Avg. Order Value</p>
         </motion.div>
       </div>

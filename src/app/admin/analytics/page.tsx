@@ -66,7 +66,7 @@ export default function AdminAnalyticsPage() {
   const stats = [
     {
       title: 'Total Revenue',
-      value: '$136,500',
+      value: '৳13,65,000',
       change: '+23.5%',
       trend: 'up',
       icon: DollarSign,
@@ -187,7 +187,7 @@ export default function AdminAnalyticsPage() {
                   }}
                   formatter={(value: number | string | undefined) => {
                     const numValue = Number(value || 0);
-                    return [`$${numValue.toLocaleString()}`, 'Revenue'];
+                    return [`৳${numValue.toLocaleString()}`, 'Revenue'];
                   }}
                 />
                 <Area

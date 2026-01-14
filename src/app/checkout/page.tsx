@@ -540,19 +540,19 @@ export default function CheckoutPage() {
               <div className="border-t pt-4 space-y-3">
                 <div className="flex justify-between text-[var(--color-text-light)]">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>৳{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[var(--color-text-light)]">
                   <span>Shipping</span>
-                  <span>${shippingCost.toFixed(2)}</span>
+                  <span>৳{shippingCost.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-[var(--color-text-light)]">
                   <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>৳{tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-3 flex justify-between font-bold text-lg text-[var(--color-text)]">
                   <span>Total</span>
-                  <span className="text-[var(--color-primary)]">${total.toFixed(2)}</span>
+                  <span className="text-[var(--color-primary)]">৳{total.toFixed(2)}</span>
                 </div>
               </div>
 

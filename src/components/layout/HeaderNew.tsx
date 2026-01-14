@@ -84,7 +84,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 flex justify-center items-center text-sm">
           <p className="text-[var(--color-text-muted)] flex items-center gap-2">
             <span className="inline-block w-2 h-2 bg-[var(--color-secondary)] rounded-full animate-pulse"></span>
-            Free shipping on orders over $50 — 
+            Free shipping on orders over ৳5000 — 
             <Link href="/products" className="text-[var(--color-text)] font-medium underline underline-offset-2 hover:text-[var(--color-secondary)] transition-colors">
               Shop Now
             </Link>
@@ -239,7 +239,7 @@ export default function Header() {
                   )}
                 </div>
                 <span className="hidden sm:inline text-white font-medium">
-                  ${cartTotal.toFixed(2)}
+                  ৳{cartTotal.toFixed(2)}
                 </span>
               </Link>
 

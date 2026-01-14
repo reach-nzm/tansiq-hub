@@ -170,11 +170,11 @@ export default function WishlistPage() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-bold text-[var(--color-primary)]">
-                        ${item.price.toFixed(2)}
+                        ৳{item.price.toFixed(2)}
                       </span>
                       {item.originalPrice && (
                         <span className="text-sm text-[var(--color-text-light)] line-through">
-                          ${item.originalPrice.toFixed(2)}
+                          ৳{item.originalPrice.toFixed(2)}
                         </span>
                       )}
                     </div>

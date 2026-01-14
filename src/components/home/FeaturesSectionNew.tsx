@@ -8,7 +8,7 @@ const features = [
   {
     icon: Truck,
     title: 'Free Shipping',
-    description: 'On orders over $50',
+    description: 'On orders over ৳5000',
     color: 'bg-green-100 text-green-600',
   },
   {

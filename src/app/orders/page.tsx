@@ -231,7 +231,7 @@ export default function OrdersPage() {
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-lg font-bold text-[var(--color-primary)]">
-                          ${order.total.toFixed(2)}
+                          ৳{order.total.toFixed(2)}
                         </span>
                         <ChevronDown
                           className={`w-5 h-5 text-[var(--color-text-light)] transition-transform ${
@@ -270,11 +270,11 @@ export default function OrdersPage() {
                                 </h5>
                               </Link>
                               <p className="text-sm text-[var(--color-text-light)]">
-                                Qty: {item.quantity} × ${item.price.toFixed(2)}
+                                Qty: {item.quantity} × ৳{item.price.toFixed(2)}
                               </p>
                             </div>
                             <span className="font-semibold text-[var(--color-text)]">
-                              ${(item.price * item.quantity).toFixed(2)}
+                              ৳{(item.price * item.quantity).toFixed(2)}
                             </span>
                           </div>
                         ))}

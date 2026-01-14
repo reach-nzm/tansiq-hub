@@ -221,7 +221,7 @@ export default function CartPage() {
               <div className="space-y-4 border-b border-[var(--color-border)] pb-6 mb-6">
                 <div className="flex justify-between">
                   <span className="text-[var(--color-text-light)]">Subtotal</span>
-                  <span className="font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="font-medium">৳{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--color-text-light)] flex items-center gap-1">
@@ -232,18 +232,18 @@ export default function CartPage() {
                     {shipping === 0 ? (
                       <span className="text-green-600">FREE</span>
                     ) : (
-                      `$${shipping.toFixed(2)}`
+                      `৳${shipping.toFixed(2)}`
                     )}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--color-text-light)]">Tax (8%)</span>
-                  <span className="font-medium">${tax.toFixed(2)}</span>
+                  <span className="font-medium">৳{tax.toFixed(2)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount</span>
-                    <span className="font-medium">-${discount.toFixed(2)}</span>
+                    <span className="font-medium">-৳{discount.toFixed(2)}</span>
                   </div>
                 )}
               </div>
@@ -252,20 +252,20 @@ export default function CartPage() {
               <div className="flex justify-between mb-6">
                 <span className="text-lg font-bold">Total</span>
                 <span className="text-2xl font-bold text-[var(--color-primary)]">
-                  ${total.toFixed(2)}
+                  ৳{total.toFixed(2)}
                 </span>
               </div>
 
               {/* Free Shipping Progress */}
-              {subtotal < 50 && (
+              {subtotal < 5000 && (
                 <div className="mb-6 p-4 bg-[var(--color-background)] rounded-lg">
                   <p className="text-sm text-[var(--color-text-light)] mb-2">
-                    Add ${(50 - subtotal).toFixed(2)} more for FREE shipping!
+                    Add ৳{(5000 - subtotal).toFixed(2)} more for FREE shipping!
                   </p>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-[var(--color-primary)] h-2 rounded-full transition-all"
-                      style={{ width: `${(subtotal / 50) * 100}%` }}
+                      style={{ width: `${(subtotal / 5000) * 100}%` }}
                     />
                   </div>
                 </div>

@@ -64,7 +64,7 @@ export default function AdminDashboard() {
   const stats = [
     {
       title: 'Total Revenue',
-      value: '$45,231.89',
+      value: '৳45,23,189',
       change: '+20.1%',
       trend: 'up',
       icon: DollarSign,

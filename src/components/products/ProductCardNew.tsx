@@ -52,7 +52,7 @@ export default function ProductCard({ product, index = 0, variant = 'default' }:
               {product.name}
             </h4>
           </Link>
-          <p className="text-sm font-semibold text-[var(--color-secondary)]">${product.price.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-[var(--color-secondary)]">৳{product.price.toFixed(2)}</p>
         </div>
       </motion.div>
     );
@@ -85,7 +85,7 @@ export default function ProductCard({ product, index = 0, variant = 'default' }:
             {product.name}
           </h4>
         </Link>
-        <p className="text-[var(--color-secondary)] font-semibold">${product.price.toFixed(2)}</p>
+        <p className="text-[var(--color-secondary)] font-semibold">৳{product.price.toFixed(2)}</p>
       </motion.div>
     );
   }

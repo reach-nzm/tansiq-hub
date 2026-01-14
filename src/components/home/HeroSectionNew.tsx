@@ -96,7 +96,7 @@ export default function HeroSection() {
                 </div>
                 <div>
                   <p className="font-semibold text-[var(--color-text)] text-sm">Free Shipping</p>
-                  <p className="text-xs text-[var(--color-text-muted)]">On orders $50+</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">On orders ৳5000+</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -176,7 +176,7 @@ export default function HeroSection() {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-[var(--color-text-muted)] mb-1">Best Seller</p>
                     <p className="font-semibold text-[var(--color-text)] truncate text-sm">Premium Organic</p>
-                    <p className="text-[var(--color-secondary)] font-bold">$49.99</p>
+                    <p className="text-[var(--color-secondary)] font-bold">৳4,999</p>
                   </div>
                 </div>
               </motion.div>

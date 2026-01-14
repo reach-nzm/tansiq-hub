@@ -198,11 +198,11 @@ export default function AdminProductsPage() {
                   <td className="px-6 py-4">
                     <div>
                       <p className="font-semibold text-[var(--color-text)]">
-                        ${product.price.toFixed(2)}
+                        ৳{product.price.toFixed(2)}
                       </p>
                       {product.originalPrice && (
                         <p className="text-sm text-[var(--color-text-light)] line-through">
-                          ${product.originalPrice.toFixed(2)}
+                          ৳{product.originalPrice.toFixed(2)}
                         </p>
                       )}
                     </div>

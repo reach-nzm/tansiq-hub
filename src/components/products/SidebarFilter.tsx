@@ -172,12 +172,12 @@ export default function SidebarFilter({
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex-1 bg-[var(--color-bg-cream)] rounded-xl px-4 py-2 text-center">
                     <span className="text-sm text-[var(--color-text-muted)]">Min</span>
-                    <p className="font-semibold text-[var(--color-text)]">${priceRange[0]}</p>
+                    <p className="font-semibold text-[var(--color-text)]">৳{priceRange[0]}</p>
                   </div>
                   <span className="text-[var(--color-text-light)]">—</span>
                   <div className="flex-1 bg-[var(--color-bg-cream)] rounded-xl px-4 py-2 text-center">
                     <span className="text-sm text-[var(--color-text-muted)]">Max</span>
-                    <p className="font-semibold text-[var(--color-text)]">${priceRange[1]}</p>
+                    <p className="font-semibold text-[var(--color-text)]">৳{priceRange[1]}</p>
                   </div>
                 </div>
 

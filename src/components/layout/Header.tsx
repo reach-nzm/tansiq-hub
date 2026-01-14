@@ -33,8 +33,8 @@ export default function Header() {
       {/* Top Bar */}
       <div className="bg-[var(--color-primary)] text-white py-2">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center text-sm">
-          <p className="hidden sm:block">✨ Free shipping on orders over $50</p>
-          <p className="sm:hidden text-center w-full">✨ Free shipping over $50</p>
+          <p className="hidden sm:block">✨ Free shipping on orders over ৳5000</p>
+          <p className="sm:hidden text-center w-full">✨ Free shipping over ৳5000</p>
           <div className="hidden sm:flex items-center gap-4">
             <span>بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم</span>
           </div>

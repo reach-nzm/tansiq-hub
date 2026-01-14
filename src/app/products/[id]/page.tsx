@@ -171,15 +171,15 @@ export default function ProductDetailPage() {
             {/* Price */}
             <div className="flex items-center gap-4 mb-6">
               <span className="text-4xl font-bold text-[var(--color-primary)]">
-                ${product.price.toFixed(2)}
+                ৳{product.price.toFixed(2)}
               </span>
               {product.originalPrice && (
                 <>
                   <span className="text-xl text-[var(--color-text-light)] line-through">
-                    ${product.originalPrice.toFixed(2)}
+                    ৳{product.originalPrice.toFixed(2)}
                   </span>
                   <span className="px-2 py-1 bg-red-100 text-red-600 text-sm font-semibold rounded">
-                    Save ${(product.originalPrice - product.price).toFixed(2)}
+                    Save ৳{(product.originalPrice - product.price).toFixed(2)}
                   </span>
                 </>
               )}
@@ -264,7 +264,7 @@ export default function ProductDetailPage() {
               <div className="text-center">
                 <Truck className="w-8 h-8 mx-auto mb-2 text-[var(--color-primary)]" />
                 <p className="text-sm font-medium">Free Shipping</p>
-                <p className="text-xs text-[var(--color-text-light)]">On orders $50+</p>
+                <p className="text-xs text-[var(--color-text-light)]">On orders ৳5000+</p>
               </div>
               <div className="text-center">
                 <Shield className="w-8 h-8 mx-auto mb-2 text-[var(--color-primary)]" />
