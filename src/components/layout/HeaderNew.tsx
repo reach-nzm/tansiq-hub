@@ -238,9 +238,15 @@ export default function Header() {
                     </motion.span>
                   )}
                 </div>
-                <span className="hidden sm:inline text-white font-medium">
-                  ৳{cartTotal.toFixed(2)}
-                </span>
+                {mounted ? (
+                  <span className="hidden sm:inline text-white font-medium">
+                    ৳{cartTotal.toFixed(2)}
+                  </span>
+                ) : (
+                  <span className="hidden sm:inline text-white font-medium">
+                    ৳0.00
+                  </span>
+                )}
               </Link>
 
               {/* Mobile Menu Toggle */}
